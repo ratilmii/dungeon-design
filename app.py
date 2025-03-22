@@ -29,13 +29,15 @@ while True:
     screen.blit(button_text, (40, 110))
 
     dungeon.draw_vertices(screen)
+    dungeon.draw_rooms(screen)
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             exit()
 
         elif event.type == pygame.MOUSEBUTTONDOWN:  
             if generate_button_rect.collidepoint(event.pos):
-                dungeon.distribute_points()
+                dungeon.generate_rooms()
 
     pygame.display.flip()
 
