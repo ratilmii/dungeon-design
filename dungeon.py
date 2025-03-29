@@ -6,8 +6,8 @@ class Dungeon:
         self.width = width
         self.height = height
         self.room_count = room_count
-        self.rooms = []
-
+        
+        #Määritellään huoneiden minimi- ja maksimikoot
         self.room_width_min_len = 50
         self.room_height_min_len = 50
         self.room_width_max_len = 200
@@ -17,24 +17,34 @@ class Dungeon:
 
     #Luodaan satunnaisen kokoiset huoneet satunnaisiin sijainteihin 
     def generate_rooms(self):
-        self.rooms = [
-            (
-                random.randint(400, self.width - 200),
-                random.randint(200, self.height - 200), 
-                random.randint(self.room_width_min_len, self.room_width_max_len),
-                random.randint(self.room_height_min_len, self.room_height_max_len)
-            )
-            for _ in range(self.room_count)
-        ]
+        self.rooms = []
+        BUFFER = 20 #Tyhjä tila huoneiden välillä
+        attempts_left = 100 #Estetään ikuinen silmukka
+        ruutu_x, ruutu_y, ruutu_w, ruutu_h = 250, 50, 980, 620 #Harmaan piirtotilan koordinaatit ja mitat
+
+        while len(self.rooms) < self.room_count and attempts_left > 0:
+            #Leveys ja korkeus
+            w = random.randint(self.room_width_min_len, self.room_width_max_len)
+            h = random.randint(self.room_height_min_len, self.room_height_max_len)
+
+            #Koordinaatit aloituskulmalle
+            x = random.randint(ruutu_x + BUFFER, ruutu_x + ruutu_w - w - BUFFER)
+            y = random.randint(ruutu_y + BUFFER, ruutu_y + ruutu_h - h - BUFFER)
+
+            new_room = pygame.Rect(x, y, w, h)
+
+            #Estetään päällekkäisyys
+            if not any(new_room.inflate(BUFFER, BUFFER).colliderect(existing.inflate(BUFFER, BUFFER)) for existing in self.rooms):
+                self.rooms.append(new_room)
+            
+            attempts_left -= 1
 
     #Piirretään huoneiden keskipisteet näytölle
     def draw_vertices(self, screen):
-        for x, y, _, _ in self.rooms:
-            pygame.draw.circle(screen, (255, 0, 0), (x, y), 2)
+        for rect in self.rooms:
+            pygame.draw.circle(screen, (255, 0, 0), rect.center, 2)
 
     #Piirretään huoneiden seinät pisteiden ympärille
     def draw_rooms(self, screen):
-        for x, y, w, h in self.rooms:
-            rect_x = x - w // 2
-            rect_y = y - h // 2
-            pygame.draw.rect(screen, (255, 255, 255), (rect_x, rect_y, w, h), 1)
+        for rect in self.rooms:
+            pygame.draw.rect(screen, (255, 255, 255), rect, 1)
